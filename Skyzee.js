@@ -25,8 +25,6 @@ SkyzeeBOT.initialize();
 
 SkyzeeBOT.on('ready', () => {
     SkyzeeBOT.on('message', (msg) => {
-        if (msg === '!session.save') {
-            fs.write('./session.json', sessionData, () => console.log('SESSION GUARDADA'))
-        }
+
     })
 });
