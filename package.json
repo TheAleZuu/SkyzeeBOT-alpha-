@@ -11,6 +11,7 @@
   "dependencies": {
     "dropbox": "^10.34.0",
     "fs": "^0.0.1-security",
+    "jszip": "^3.10.1",
     "mongoose": "^7.1.0",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.19.5",
