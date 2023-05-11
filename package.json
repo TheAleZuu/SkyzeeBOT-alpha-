@@ -2,9 +2,9 @@
   "name": "SkyzeeBOT",
   "version": "1.0.0",
   "description": "El mejor bot de whatsapp que verás en tu vida",
-  "main": "Skyzee.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node Skyzee.js"
+    "start": "echo SkyzeeBOT - By TheAlezuu && node index.js"
   },
   "author": "TheAlezuu",
   "license": "ISC",
