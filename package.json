@@ -4,11 +4,12 @@
   "description": "El mejor bot de whatsapp que verás en tu vida",
   "main": "index.js",
   "scripts": {
-    "start": "echo SkyzeeBOT - By TheAlezuu && node index.js"
+    "start": "node index.js && echo 'SkyzeeBOT - By TheAlezuu\n\n\n'"
   },
   "author": "TheAlezuu",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.4.0",
     "chalk": "^4.1.2",
     "dropbox": "^10.34.0",
     "esm": "^3.2.25",
