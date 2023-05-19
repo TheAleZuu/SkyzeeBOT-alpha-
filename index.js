@@ -3,10 +3,12 @@ const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const Dropbox = require('dropbox').Dropbox;
 const chalk = require('chalk');
+// const Date = require('date');
 
 const SESSION_FOLDER_PATH = './session/';
 const botName = 'SkyzeeBOT';
 const prefix = /^[!/.]/;
+const currentDate = new Date();
 
 const client = {        
     dropbox: new Dropbox({
@@ -29,7 +31,7 @@ if (fs.existsSync(SESSION_FOLDER_PATH)) {
 };
 
 SkyzeeBOT.on('qr', (qr) => {
-    qrcode.generate(qr, {small: true});
+    qrcode.generate(qr, { small: true });
 });
 
 SkyzeeBOT.on('authenticated', () => {
@@ -45,7 +47,7 @@ SkyzeeBOT.on('message', async message => {
     const stickerMetadata = {
         sendMediaAsSticker: true,
         stickerAuthor: botName,
-        stickerName: `Creado por`
+        stickerName: `Creado por ${message._data.notifyName}\n${currentDate.toLocaleDateString()} a las ${currentDate.toLocaleTimeString()}`
     };
 
     console.log(message.body);
