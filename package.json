@@ -4,7 +4,7 @@
   "description": "El mejor bot de whatsapp que verás en tu vida",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js && echo 'SkyzeeBOT - By TheAlezuu\n\n\n'"
+    "start": "node index.js && echo SkyzeeBOT - By TheAlezuu"
   },
   "author": "TheAlezuu",
   "license": "ISC",

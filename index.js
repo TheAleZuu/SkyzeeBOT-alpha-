@@ -4,8 +4,8 @@ const fs = require('fs');
 const Dropbox = require('dropbox').Dropbox;
 const chalk = require('chalk');
 
-const SESSION_FOLDER_PATH = './session/'
-
+const SESSION_FOLDER_PATH = './session/';
+const botName = 'SkyzeeBOT';
 const prefix = /^[!/.]/;
 
 const client = {        
@@ -39,20 +39,30 @@ SkyzeeBOT.on('authenticated', () => {
 SkyzeeBOT.on('ready', () => {
     console.log('SkyzeeBOT activo');
 });
-
-SkyzeeBOT.initialize();
-
+    
 SkyzeeBOT.on('message', async message => {
     const command = prefix.test(message.body) ? message.body.slice(1) : null;
-    console.log(message);
+    const stickerMetadata = {
+        sendMediaAsSticker: true,
+        stickerAuthor: botName,
+        stickerName: `Creado por`
+    };
 
+    console.log(message.body);
+    
     switch (command) {
         case 's': case 'sticker':
-            await message.reply('media');
-            // media = await message.downloadMedia();
+            let media;
+            if (message.hasQuotedMsg) {
+                message = await message.getQuotedMessage();
+            }
+            media = await message.downloadMedia();
+            message.reply(media, undefined, stickerMetadata);
             break;
     };
 });
+
+SkyzeeBOT.initialize();
 
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
