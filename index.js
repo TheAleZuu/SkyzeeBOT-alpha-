@@ -1,13 +1,16 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const Dropbox = require('dropbox').Dropbox;
 const chalk = require('chalk');
-// const Date = require('date');
+const puppeteer = require('puppeteer');
+const { exec } = require('child_process');
+const { resolve } = require('path');
 
-const SESSION_FOLDER_PATH = './session/';
 const botName = 'SkyzeeBOT';
-const prefix = /^[!/.]/;
+const prefix = ['!', '/', '#'];
+const prefixRoot = ['>', '$'];
+const SESSION_FOLDER_PATH = './session/';
 const currentDate = new Date();
 
 const client = {        
@@ -18,53 +21,75 @@ const client = {
         authStrategy: new LocalAuth({
             clientId: 'SKYZEEBOT',
             dataPath: SESSION_FOLDER_PATH
-        })
-    })
+        }),
+        puppeteer: {
+            executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+        }
+    }),
 };
 
 const SkyzeeBOT = client.wweb_js;
 
 if (fs.existsSync(SESSION_FOLDER_PATH)) {
-    console.log('[✓] Archivo de sesión encontrada!');
+    console.log(`${chalk.green('[✓]')} ${chalk.greenBright(`Path '${SESSION_FOLDER_PATH}' found!`)}`);
 } else {
-    console.log('[!] No se encontró el archivo de sesión!');
+    console.log(`${chalk.rgb(255, 200, 0)('[!]')} ${chalk.yellowBright(`Path '${SESSION_FOLDER_PATH}' not found! Scan the QR...`)}`);
 };
 
 SkyzeeBOT.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
+    console.log(`${chalk.rgb(255, 200, 0)('[!]')} ${chalk.yellowBright('Scan me!')}`)
 });
 
-SkyzeeBOT.on('authenticated', () => {
-    console.log('SkyzeeBOT activo');
-});
+SkyzeeBOT.on('authenticated', () => {});
 
+SkyzeeBOT.initialize();
+    
 SkyzeeBOT.on('ready', () => {
-    console.log('SkyzeeBOT activo');
+    console.log(`${chalk.green('[✓]')} ${chalk.greenBright(`${botName} succesfully connected to "${SkyzeeBOT.info.pushname}"!`)}`);
 });
     
 SkyzeeBOT.on('message', async message => {
-    const command = prefix.test(message.body) ? message.body.slice(1) : null;
-    const stickerMetadata = {
-        sendMediaAsSticker: true,
-        stickerAuthor: botName,
-        stickerName: `Creado por ${message._data.notifyName}\n${currentDate.toLocaleDateString()} a las ${currentDate.toLocaleTimeString()}`
-    };
+    console.log(message);
 
-    console.log(message.body);
+    const isCommand = new RegExp(`^[${prefix.join()}]`).test(message.body);
+
+    if (!isCommand) return;
+
+    const args = message.body.split(' ');
+    const command = args.shift().slice(1);
     
     switch (command) {
         case 's': case 'sticker':
-            let media;
-            if (message.hasQuotedMsg) {
-                message = await message.getQuotedMessage();
-            }
-            media = await message.downloadMedia();
+            if (!message.hasQuotedMsg && !message.hasMedia) {
+                let res = `No se encontró la imagen que deseas convertir! Recuerda que para crear stickers debes enviar ${message.body} adjuntando o respondiendo una imagen o un video de 4 segundos como máximo.`;
+                return message.reply(res);
+            };
+            var media = message.hasQuotedMsg
+                ? await message.getQuotedMessage().then(async quoted => await quoted.downloadMedia())
+                : await message.downloadMedia();
+            var stickerMetadata = {
+                sendMediaAsSticker: true,
+                stickerAuthor: botName,
+                stickerName: `Hecho por ${message._data.notifyName}${message.hasQuotedMsg ? `\nMultimedia de ${message.getQuotedMessage()._data.notifyName}` : undefined}\n\n${currentDate.toLocaleDateString()} (${currentDate.toLocaleTimeString()})`
+            };
             message.reply(media, undefined, stickerMetadata);
+            break;
+        case 'download':
+            var buffer = await new Promise((resolve, reject) => {
+                    exec(`cd ./utils/twitter-video-dl/ && python twitter-video-dl.py ${args[0]} twitter-${message.from}`, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(error);
+                        reject(error);
+                    };
+                    resolve(`./utils/twitter-video-dl/twitter-${message.from}.mp4`);
+                });
+            });
+            var media = MessageMedia.fromFilePath(buffer);
+            message.reply(media).then(() => fs.unlink(buffer, (err) => console.error(err)));
             break;
     };
 });
-
-SkyzeeBOT.initialize();
 
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
