@@ -3,7 +3,7 @@ const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const Dropbox = require('dropbox').Dropbox;
 const chalk = require('chalk');
-const puppeteer = require('puppeteer');
+const youtubedl = require('youtube-dl-exec');
 const { exec } = require('child_process');
 const { resolve } = require('path');
 
@@ -34,7 +34,7 @@ if (fs.existsSync(SESSION_FOLDER_PATH)) {
     console.log(`${chalk.green('[✓]')} ${chalk.greenBright(`Path '${SESSION_FOLDER_PATH}' found!`)}`);
 } else {
     console.log(`${chalk.rgb(255, 200, 0)('[!]')} ${chalk.yellowBright(`Path '${SESSION_FOLDER_PATH}' not found! Scan the QR...`)}`);
-};
+}
 
 SkyzeeBOT.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
@@ -64,7 +64,7 @@ SkyzeeBOT.on('message', async message => {
             if (!message.hasQuotedMsg && !message.hasMedia) {
                 let res = `No se encontró la imagen que deseas convertir! Recuerda que para crear stickers debes enviar ${message.body} adjuntando o respondiendo una imagen o un video de 4 segundos como máximo.`;
                 return message.reply(res);
-            };
+            }
             var media = message.hasQuotedMsg
                 ? await message.getQuotedMessage().then(async quoted => await quoted.downloadMedia())
                 : await message.downloadMedia();
@@ -76,17 +76,24 @@ SkyzeeBOT.on('message', async message => {
             message.reply(media, undefined, stickerMetadata);
             break;
         case 'download':
-            var buffer = await new Promise((resolve, reject) => {
+            if (/twitter/.test(args[0])) {
+                var buffer = await new Promise((resolve, reject) => {
                     exec(`cd ./utils/twitter-video-dl/ && python twitter-video-dl.py ${args[0]} twitter-${message.from}`, (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(error);
-                        reject(error);
-                    };
-                    resolve(`./utils/twitter-video-dl/twitter-${message.from}.mp4`);
+                        if (error) {
+                            console.error(error);
+                            reject(error);
+                        }
+                        resolve(`./utils/twitter-video-dl/twitter-${message.from}.mp4`);
+                    });
                 });
-            });
-            var media = MessageMedia.fromFilePath(buffer);
-            message.reply(media).then(() => fs.unlink(buffer, (err) => console.error(err)));
+                var media = MessageMedia.fromFilePath(buffer);
+                message.reply(media)
+                fs.unlink(buffer, (err) => console.error(err));
+            } else if (/youtube/.test(args[0]) {
+                var buffer = youtubedl(args[0], { dumpSimpleJson: true });
+                var media = new MessageMedia(undefined, buffer)
+                message.reply(media)
+            }
             break;
     };
 });
