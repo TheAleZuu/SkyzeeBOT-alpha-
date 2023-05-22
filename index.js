@@ -31,14 +31,14 @@ const client = {
 const SkyzeeBOT = client.wweb_js;
 
 if (fs.existsSync(SESSION_FOLDER_PATH)) {
-    console.log(`${chalk.green('[✓]')} ${chalk.greenBright(`Path '${SESSION_FOLDER_PATH}' found!`)}`);
+    console.log(`${chalk.greenBright('[✓]')} ${chalk.green(`Path '${SESSION_FOLDER_PATH}' found!`)}`);
 } else {
-    console.log(`${chalk.rgb(255, 200, 0)('[!]')} ${chalk.yellowBright(`Path '${SESSION_FOLDER_PATH}' not found! Scan the QR...`)}`);
+    console.log(`${chalk.rgb(255, 200, 0)('[!]')} ${chalk.yellow(`Path '${SESSION_FOLDER_PATH}' not found! Scan the QR...`)}`);
 }
 
 SkyzeeBOT.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
-    console.log(`${chalk.rgb(255, 200, 0)('[!]')} ${chalk.yellowBright('Scan me!')}`)
+    console.log(`${chalk.rgb(255, 200, 0)('[!]')} ${chalk.yellow('Scan me!')}`)
 });
 
 SkyzeeBOT.on('authenticated', () => {});
@@ -46,13 +46,23 @@ SkyzeeBOT.on('authenticated', () => {});
 SkyzeeBOT.initialize();
     
 SkyzeeBOT.on('ready', () => {
-    console.log(`${chalk.green('[✓]')} ${chalk.greenBright(`${botName} succesfully connected to "${SkyzeeBOT.info.pushname}"!`)}`);
+    console.log(`${chalk.greenBright('[✓]')} ${chalk.green(`${botName} succesfully connected to "${SkyzeeBOT.info.pushname}"!`)}`);
 });
     
 SkyzeeBOT.on('message', async message => {
     console.log(message);
-
+    
     const isCommand = new RegExp(`^[${prefix.join()}]`).test(message.body);
+    const chatMetadata = await SkyzeeBOT.getChatById(message.from);
+    const userMetadata = await message.getContact(message.author);
+    
+    if (chatMetadata.isGroup) {
+        console.log(' < ' + chalk.bgMagenta(' GROUP: ') + chalk.magentaBright.bgMagenta(chatMetadata.name) + ' > ');
+        console.log('   ' + chalk.magenta('"' + userMetadata.pushname + '"') + (userMetadata.name !== undefined ? ` (${userMetadata.name})` : '') + ':');
+        console.log('       ' + chalk.magentaBright(message.body));
+    } else {
+        console.log(' < ' + chalk.bgBlue(' PRIVATE: ') + chalk.blueBright.bgBlue(chatMetadata.name) + ' > ');
+    }
 
     if (!isCommand) return;
 
@@ -71,12 +81,12 @@ SkyzeeBOT.on('message', async message => {
             var stickerMetadata = {
                 sendMediaAsSticker: true,
                 stickerAuthor: botName,
-                stickerName: `Hecho por ${message._data.notifyName}${message.hasQuotedMsg ? `\nMultimedia de ${message.getQuotedMessage()._data.notifyName}` : undefined}\n\n${currentDate.toLocaleDateString()} (${currentDate.toLocaleTimeString()})`
+                stickerName: `Hecho por ${(await message.getContact()).pushname}${message.hasQuotedMsg ? `\nMultimedia de ${(await message.getContact()).pushname}` : undefined}\n\n${currentDate.toLocaleDateString()} (${currentDate.toLocaleTimeString()})`
             };
             message.reply(media, undefined, stickerMetadata);
             break;
         case 'download':
-            if (/twitter/.test(args[0])) {
+            if (args[0].includes('twitter')) {
                 var buffer = await new Promise((resolve, reject) => {
                     exec(`cd ./utils/twitter-video-dl/ && python twitter-video-dl.py ${args[0]} twitter-${message.from}`, (error, stdout, stderr) => {
                         if (error) {
@@ -89,10 +99,15 @@ SkyzeeBOT.on('message', async message => {
                 var media = MessageMedia.fromFilePath(buffer);
                 message.reply(media)
                 fs.unlink(buffer, (err) => console.error(err));
-            } else if (/youtube/.test(args[0]) {
-                var buffer = youtubedl(args[0], { dumpSimpleJson: true });
-                var media = new MessageMedia(undefined, buffer)
-                message.reply(media)
+            } else if (args[0].includes('youtube') || args[0].includes('youtu.be')) {
+                var path = `./tmp/youtube-${message.from}.mp4`;
+                await youtubedl(args[0], {
+                    output: path,
+                    format: 'mp4'
+                });
+                var media = MessageMedia.fromFilePath(path);
+                message.reply(media);
+                fs.unlink(path, (err) => console.error(err));
             }
             break;
     };

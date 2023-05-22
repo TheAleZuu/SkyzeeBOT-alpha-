@@ -4,7 +4,7 @@
   "description": "El mejor bot de whatsapp que verás en tu vida",
   "main": "index.js",
   "scripts": {
-    "start": "cd ./utils/twitter-video-dl/ && pip install -r requirements.txt && cd ../.. && echo SkyzeeBOT By TheAlezuu && node index.js"
+    "start": "cd ./utils/twitter-video-dl/ && pip install -r requirements.txt && cd ../.. && node index.js"
   },
   "author": "TheAlezuu",
   "license": "ISC",
@@ -13,6 +13,7 @@
     "dropbox": "^10.34.0",
     "fs": "^0.0.1-security",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.19.5"
+    "whatsapp-web.js": "^1.19.5",
+    "youtube-dl-exec": "^2.4.2"
   }
 }
