@@ -9,5 +9,6 @@ global.SESSION_FOLDER_PATH = './session/';
 global.botName = 'Skyzee';
 global.prefix = ['!', '/', '#'];
 global.prefixRoot = ['>', '$'];
+global.barChar = ['|', '/', '-', '\\'];
 global.currentDate = new Date();
 global.public = true;
