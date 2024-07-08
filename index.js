@@ -1,7 +1,7 @@
 require('./global.js');
 const cliProgress = require('cli-progress');
 const SkyzeeBOT = require('./Skyzee.js');
-const { a } = require('./donut-js/donut.min.js');
+const { a } = require('./utils/pantalla_carga.js');
 
 var seguir = true;
 
